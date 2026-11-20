@@ -1,0 +1,146 @@
+﻿<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MessengerCRM</title>
+  <link rel="stylesheet" href="style.css?v=20261011-2" />
+</head>
+<body>
+  <div id="loginView" class="center-screen">
+    <div class="login-card">
+      <div class="brand">MessengerCRM</div>
+      <h1>Вхід</h1>
+      <p class="muted">Серверна панель Telegram + WhatsApp</p>
+      <div id="setupCodeWrap" class="hidden">
+        <label>Код первинного налаштування</label>
+        <input id="setupCode" autocomplete="off" />
+      </div>
+      <label>Логін</label>
+      <input id="loginUser" autocomplete="username" value="admin" />
+      <label>Пароль</label>
+      <input id="loginPass" type="password" autocomplete="current-password" />
+      <button id="loginBtn" class="primary wide">Увійти</button>
+      <div id="loginError" class="error"></div>
+    </div>
+  </div>
+
+  <div id="appView" class="hidden">
+    <header class="topbar">
+      <div><div class="brand small">MessengerCRM</div><div class="muted">Серверна панель</div></div>
+      <div class="top-actions">
+        <button id="refreshBtn">Оновити</button>
+        <button id="passwordBtn">Змінити пароль</button>
+        <button id="logoutBtn">Вийти</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="status-grid">
+        <div class="card channel-card">
+          <div class="channel-title">Telegram</div>
+          <div id="tgState" class="status-pill">Перевірка…</div>
+          <div id="tgAccount" class="muted"></div>
+          <div class="row-actions"><button id="tgQrBtn">Підключити Telegram</button></div>
+        </div>
+        <div class="card channel-card">
+          <div class="channel-title">WhatsApp</div>
+          <div id="waState" class="status-pill">Перевірка…</div>
+          <div id="waAccount" class="muted"></div>
+          <div class="row-actions"><button id="waQrBtn">Підключити / QR</button></div>
+        </div>
+      </section>
+
+      <section class="summary-grid">
+        <div class="metric"><span>В черзі</span><b id="mQueued">0</b></div>
+        <div class="metric"><span>Надіслано</span><b id="mSent">0</b></div>
+        <div class="metric"><span>Прочитано</span><b id="mRead">0</b></div>
+        <div class="metric"><span>Відповіли</span><b id="mReplied">0</b></div>
+        <div class="metric"><span>Помилки</span><b id="mFailed">0</b></div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <h2>Контакти</h2>
+            <div class="muted">Архів не видаляє контакт: він лише приховує його з активного списку. Через “Показати архів” контакт можна відновити. “Видалити” прибирає контакт з CRM назавжди.</div>
+          </div>
+          <div class="row-actions wrap">
+            <input id="searchBox" placeholder="Пошук…" />
+            <input id="excelFile" type="file" accept=".xlsx,.xlsm" class="file-input" />
+            <button id="importBtn">Імпорт Excel</button>
+            <button id="checkChannelsBtn">Перевірити WhatsApp</button>
+            <button id="selectVisibleBtn">Вибрати всіх</button>
+            <button id="clearSelectionBtn">Зняти вибір</button>
+            <button id="showArchivedBtn">Показати архів</button>
+            <button id="exportSelectedBtn">Експорт вибраних</button>
+            <button id="exportAllBtn">Експорт усіх</button>
+            <button id="addContactBtn">+ Контакт</button>
+          </div>
+        </div>
+        <div class="channel-legend" aria-label="Пояснення статусів">
+          <div class="legend-group"><strong>Telegram:</strong>
+            <span><i class="channel-mark idle">—</i> ще не відправляли</span>
+            <span><i class="channel-mark sent">✓</i> відправлено</span>
+            <span><i class="channel-mark read">✓</i> прочитано</span>
+            <span><i class="channel-mark failed">×</i> не відправлено</span>
+          </div>
+          <div class="legend-group"><strong>WhatsApp:</strong>
+            <span><i class="channel-mark available">+</i> акаунт є</span>
+            <span><i class="channel-mark absent">−</i> акаунта немає</span>
+            <span><i class="channel-mark sent">✓</i> відправлено</span>
+            <span><i class="channel-mark read">✓</i> прочитано</span>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th><input id="selectAll" type="checkbox" /></th><th>Ім'я</th><th>Телефон</th><th>Telegram</th><th>WhatsApp</th><th>Примітка</th><th></th></tr></thead>
+            <tbody id="contactsBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card send-card">
+        <div class="section-head">
+          <div><h2>Надсилання</h2><div class="muted"><span id="selectedCount">0</span> контактів вибрано</div></div>
+          <div class="row-actions">
+            <label class="radio"><input type="radio" name="channel" value="telegram" checked /> Telegram</label>
+            <label class="radio"><input type="radio" name="channel" value="whatsapp" /> WhatsApp</label>
+          </div>
+        </div>
+        <textarea id="messageText" rows="5" placeholder="Добрий день, {Name}. ..."></textarea>
+        <div class="send-footer">
+          <div class="muted">Шаблон <b>{Name}</b> автоматично підставить ім'я контакту.</div>
+          <button id="sendBtn" class="primary">Поставити в чергу</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div><h2>Остання активність</h2><div class="muted">Відповідь показується тільки всередині вашого вихідного повідомлення. Подальшу переписку CRM не дублює.</div></div>
+          <div class="row-actions wrap">
+            <button id="deleteMessagesBtn">Очистити вибрані</button>
+            <button id="clearMessagesBtn">Очистити все</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th><input id="messagesSelectAll" type="checkbox" /></th><th>Час</th><th>Контакт</th><th>Канал</th><th>Напрям</th><th>Статус</th><th>Повідомлення</th></tr></thead>
+            <tbody id="messagesBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="modal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head"><h2 id="modalTitle">Підключення</h2><button id="modalClose">×</button></div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="app.js?v=20261011-2"></script>
+</body>
+</html>
